@@ -1,0 +1,2 @@
+-- RenameIndex
+ALTER INDEX "JiraProjectConfig_platform_workspaceId_channelId_jiraProjectKey" RENAME TO "JiraProjectConfig_platform_workspaceId_channelId_jiraProjec_idx";

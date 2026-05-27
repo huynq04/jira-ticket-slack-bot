@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model JiraTicketMapping {
+  id           String   @id @default(cuid())
+  platform     String
+  workspaceId  String
+  channelId    String
+  messageId    String
+  messageUrl   String?
+  messageHash  String
+  jiraIssueKey String
+  jiraIssueUrl String
+  createdBy    String
+  createdAt    DateTime @default(now())
+  status       String
+
+  @@unique([platform, workspaceId, channelId, messageId])
+  @@index([messageHash])
+}
+
+model JiraProjectConfig {
+  id                      String   @id @default(cuid())
+  platform                String
+  workspaceId             String
+  channelId               String?
+  jiraProjectKey          String
+  defaultIssueType        String
+  defaultPriority         String
+  defaultAssignee         String?
+  componentMapping        Json?
+  severityPriorityMapping Json?
+  active                  Boolean  @default(true)
+  createdAt               DateTime @default(now())
+
+  @@index([platform, workspaceId, channelId, jiraProjectKey, active])
+}
+
+model JiraTicketAuditLog {
+  id              String   @id @default(cuid())
+  action          String
+  platform        String?
+  channelId       String?
+  messageId       String?
+  jiraIssueKey    String?
+  actor           String?
+  requestPayload  Json?
+  responsePayload Json?
+  errorMessage    String?
+  createdAt       DateTime @default(now())
+
+  @@index([action])
+  @@index([platform, channelId, messageId])
+}
