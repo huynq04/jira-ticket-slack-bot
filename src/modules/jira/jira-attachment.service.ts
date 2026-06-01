@@ -6,6 +6,13 @@ import { JiraClient } from './jira.client';
 export class JiraAttachmentService {
   constructor(private readonly jiraClient: JiraClient) {}
 
+  uploadAttachment(
+    issueKey: string,
+    attachment: TicketAttachmentDto,
+  ): Promise<unknown> {
+    return this.jiraClient.uploadAttachment(issueKey, attachment);
+  }
+
   async uploadAttachments(
     issueKey: string,
     attachments: TicketAttachmentDto[],

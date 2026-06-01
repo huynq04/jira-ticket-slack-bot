@@ -58,3 +58,34 @@ model JiraTicketAuditLog {
   @@index([action])
   @@index([platform, channelId, messageId])
 }
+
+model SlackJiraProjectMapping {
+  id               String   @id @default(cuid())
+  slackTeamId      String   @map("slack_team_id")
+  slackChannelId   String   @map("slack_channel_id")
+  slackChannelName String?  @map("slack_channel_name")
+  jiraProjectKey   String   @map("jira_project_key")
+  defaultIssueType String   @default("Bug") @map("default_issue_type")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@unique([slackTeamId, slackChannelId])
+  @@index([slackTeamId, slackChannelId, isActive])
+  @@map("slack_jira_project_mapping")
+}
+
+model SlackJiraUserMapping {
+  id              String   @id @default(cuid())
+  slackUserId     String?  @map("slack_user_id")
+  slackUsername   String?  @map("slack_username")
+  jiraAccountId   String   @map("jira_account_id")
+  jiraDisplayName String?  @map("jira_display_name")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([slackUserId, isActive])
+  @@index([slackUsername, isActive])
+  @@map("slack_jira_user_mapping")
+}

@@ -10,5 +10,21 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    profiles:
+      - tunnel
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:-}
+    command:
+      - http
+      - --url=${NGROK_DOMAIN:-}
+      - host.docker.internal:${PORT:-3000}
+      - --log=stdout
+    ports:
+      - "4040:4040"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   postgres_data:

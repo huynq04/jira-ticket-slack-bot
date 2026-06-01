@@ -72,6 +72,9 @@ export class TicketAttachmentDto {
   @IsOptional()
   @IsString()
   url?: string;
+
+  @IsOptional()
+  buffer?: Buffer;
 }
 
 export class TicketMessageDto {
