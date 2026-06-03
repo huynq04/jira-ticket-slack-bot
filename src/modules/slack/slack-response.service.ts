@@ -8,6 +8,8 @@ export interface SlackThreadMessage {
   user?: string;
   username?: string;
   text?: string;
+  botId?: string;
+  subtype?: string;
 }
 
 export interface SlackUserInfo {
@@ -111,8 +113,8 @@ export class SlackResponseService {
       );
       return undefined;
     } catch (error) {
-      this.logger.error(
-        'Failed to get Slack message permalink',
+      this.logger.warn(
+        'Optional Slack chat.getPermalink lookup failed',
         error instanceof Error ? error.message : String(error),
       );
       return undefined;
@@ -141,15 +143,22 @@ export class SlackResponseService {
       );
 
       if (response.data?.ok && Array.isArray(response.data?.messages)) {
-        return response.data.messages;
+        return response.data.messages.map((message: any) => ({
+          ts: message.ts,
+          user: message.user,
+          username: message.username,
+          text: message.text,
+          botId: message.bot_id,
+          subtype: message.subtype,
+        }));
       }
       this.logger.warn(
         `Slack conversations.replies failed: ${response.data?.error ?? 'unknown error'}`,
       );
       return [];
     } catch (error) {
-      this.logger.error(
-        'Failed to get Slack thread replies',
+      this.logger.warn(
+        'Optional Slack conversations.replies lookup failed',
         error instanceof Error ? error.message : String(error),
       );
       return [];
@@ -191,8 +200,8 @@ export class SlackResponseService {
       );
       return undefined;
     } catch (error) {
-      this.logger.error(
-        'Failed to get Slack user info',
+      this.logger.warn(
+        'Optional Slack users.info lookup failed',
         error instanceof Error ? error.message : String(error),
       );
       return undefined;

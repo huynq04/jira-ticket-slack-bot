@@ -9,11 +9,16 @@ NestJS service that creates Jira tickets from a Slack Message Shortcut.
 - Slack request signature verification with raw request body
 - Channel to Jira project mapping through Prisma/PostgreSQL
 - Optional Slack user to Jira `accountId` mapping
+- Groq AI title generation for free-form bug messages
 - Jira Cloud API v3 support with ADF descriptions
-- Slack thread context in Jira description
+- Clean Jira descriptions from Slack message content
 - Slack file download and Jira attachment upload
 - Duplicate prevention per Slack message
 - Slack thread replies for success and error responses
+
+## Tester Guide
+
+For tester-facing usage instructions, see [TESTER_GUIDE.md](./TESTER_GUIDE.md).
 
 ## Run Locally
 
@@ -85,6 +90,9 @@ JIRA_API_VERSION=3
 JIRA_DEFAULT_ISSUE_TYPE=Bug
 JIRA_MAX_ATTACHMENT_SIZE_MB=50
 INTERNAL_API_TOKEN=change-me
+GROQ_API_KEY=change-me
+GROQ_MODEL=llama-3.1-8b-instant
+GROQ_FALLBACK_MODELS=qwen/qwen3-32b
 ```
 
 Legacy Jira Server/Data Center auth is still supported through `JIRA_AUTH_TYPE`, `JIRA_TOKEN`, `JIRA_USERNAME`, and `JIRA_PASSWORD`, but the Message Shortcut flow is optimized for Jira Cloud v3.
@@ -152,12 +160,25 @@ Required bot scopes:
 
 ## Message Parsing
 
-- `Title:` or `Tiêu đề:` sets the Jira summary.
-- Without a title label, the first non-empty message line becomes the summary.
-- `Assignee:` or `Người xử lý:` is optional.
-- Assignee values can be Slack mentions like `<@U123>`, `@username`, or plain text.
+The bot first reads simple labels locally. If the message has `Title:` or `Tiêu đề:`, that value becomes the Jira summary. If there is no title label, the bot sends the Slack message content to Groq Chat Completions and asks the configured model to return a plain-text Jira title. `GROQ_API_KEY` is required when AI title or thread description generation is needed.
 
-The Jira description includes Slack source, channel, shortcut user, original message link, bug content, thread context, and attachment list.
+Default AI model:
+
+```env
+GROQ_MODEL=llama-3.1-8b-instant
+GROQ_FALLBACK_MODELS=qwen/qwen3-32b
+```
+
+When a title must be generated, AI title generation must succeed before Jira issue creation starts. If Groq is unavailable, returns an empty title, or returns an invalid title, the bot replies with an error instead of creating a Jira ticket.
+
+Supported message hints:
+
+- `Title:` or `Tiêu đề:` sets the Jira summary directly.
+- `Assignee:` / `Người xử lý:` or a free-form Slack/Jira mention like `<@U123>` / `@username` can be used as assignee.
+
+Jira summaries are prefixed automatically with `[App]`, `[Web]`, or `[App/Web]` based on the message content.
+
+The Jira assignee hint is parsed locally from the Slack message. If the Slack message has thread replies, the bot fetches tester replies, ignores bot messages, and asks Groq to compose a clean Jira description from the original message plus tester thread context. Without thread replies, Jira description uses the cleaned original message content, without Slack metadata, title, assignee, or attachment name lists.
 
 ## Local Test Flow
 

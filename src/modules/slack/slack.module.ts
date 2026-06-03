@@ -3,10 +3,10 @@ import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
 import { DuplicateModule } from '../duplicate/duplicate.module';
 import { JiraModule } from '../jira/jira.module';
+import { SlackAiTicketParserService } from './slack-ai-ticket-parser.service';
 import { SlackFileService } from './slack-file.service';
 import { SlackInteractionController } from './slack-interaction.controller';
 import { SlackJiraMappingService } from './slack-jira-mapping.service';
-import { SlackMessageParserService } from './slack-message-parser.service';
 import { SlackMessageTicketService } from './slack-message-ticket.service';
 import { SlackResponseService } from './slack-response.service';
 import { SlackService } from './slack.service';
@@ -15,9 +15,9 @@ import { SlackService } from './slack.service';
   imports: [AuditModule, DuplicateModule, HttpModule, JiraModule],
   controllers: [SlackInteractionController],
   providers: [
+    SlackAiTicketParserService,
     SlackFileService,
     SlackJiraMappingService,
-    SlackMessageParserService,
     SlackMessageTicketService,
     SlackService,
     SlackResponseService,
